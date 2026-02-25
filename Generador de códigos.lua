@@ -98,9 +98,10 @@ cornerOut.CornerRadius = UDim.new(0,8)
 -------------------------------------------------
 generate.MouseButton1Click:Connect(function()
 
-	local condiciones = tonumber(minCondBox.Text) or 1
+	local condicionesMin = tonumber(minCondBox.Text) or 1
 	
-	local code = "repeat task.wait() until game:IsLoaded()\n"
+	local code = ""
+	code ..= "repeat task.wait() until game:IsLoaded()\n"
 	code ..= "local condiciones = 0\n"
 	code ..= "local player = game:GetService('Players').LocalPlayer\n\n"
 
@@ -109,23 +110,26 @@ generate.MouseButton1Click:Connect(function()
 		code ..= "if game.PlaceId == "..gameIdBox.Text.." then condiciones += 1 end\n\n"
 	end
 	
-	-- Carpetas
+	-- Carpetas (PROFUNDO + limpia espacios)
 	if folderBox.Text ~= "" then
 		for folder in string.gmatch(folderBox.Text, '([^,]+)') do
-			code ..= "if game.Workspace:FindFirstChild('"..folder.."') then condiciones += 1 end\n"
+			folder = folder:match("^%s*(.-)%s*$")
+			code ..= "if game.Workspace:FindFirstChild('"..folder.."', true) then condiciones += 1 end\n"
 		end
 	end
 	
-	-- Remotes
+	-- Remotes (PROFUNDO + limpia espacios)
 	if remoteBox.Text ~= "" then
 		for remote in string.gmatch(remoteBox.Text, '([^,]+)') do
-			code ..= "if game.ReplicatedStorage:FindFirstChild('"..remote.."') then condiciones += 1 end\n"
+			remote = remote:match("^%s*(.-)%s*$")
+			code ..= "if game.ReplicatedStorage:FindFirstChild('"..remote.."', true) then condiciones += 1 end\n"
 		end
 	end
 	
-	-- IntValues
+	-- IntValues (profundo)
 	if intValueBox.Text ~= "" then
 		for val in string.gmatch(intValueBox.Text, '([^,]+)') do
+			val = val:match("^%s*(.-)%s*$")
 			code ..= "if game:FindFirstChild('"..val.."', true) then condiciones += 1 end\n"
 		end
 	end
@@ -134,12 +138,14 @@ generate.MouseButton1Click:Connect(function()
 	if leaderstatsBox.Text ~= "" then
 		code ..= "local ls = player:FindFirstChild('leaderstats')\n"
 		for stat in string.gmatch(leaderstatsBox.Text, '([^,]+)') do
+			stat = stat:match("^%s*(.-)%s*$")
 			code ..= "if ls and ls:FindFirstChild('"..stat.."') then condiciones += 1 end\n"
 		end
 	end
 	
-	code ..= "\nif condiciones >= "..condiciones.." then\n"
-	code ..= execBox.Text.."\nend"
+	code ..= "\nif condiciones >= "..condicionesMin.." then\n"
+	code ..= "    "..execBox.Text.."\n"
+	code ..= "end"
 	
 	output.Text = code
 end)
